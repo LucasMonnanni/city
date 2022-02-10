@@ -20,7 +20,6 @@ class CreateScene extends Phaser.Scene {
 	}
 	
 	onClick(tile, pointer) {
-		console.log('tileClicked: ' + tile.X + ', ' + tile.Y)
 		if (!this.clicked) {
 			this.clicked = true
 			this.drag = {
@@ -29,9 +28,6 @@ class CreateScene extends Phaser.Scene {
 				end: tile,
 				pointer: pointer
 			}
-			console.log('Drag start set')
-			console.log(tile.x, tile.y)
-			console.log(pointer.worldX, pointer.worldY)
 		} else {
 			this.clicked = false
 			this.createSelectionObject()

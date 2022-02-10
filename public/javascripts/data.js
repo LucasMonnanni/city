@@ -4,6 +4,9 @@ const data = {
 		speed: 10,
 		maxZoom: 2,
 		minZoom: 0.1
+	},
+	roads: {
+		gridSize: 5
 	}
 }
 

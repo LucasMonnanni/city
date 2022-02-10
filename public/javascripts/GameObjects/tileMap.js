@@ -63,6 +63,7 @@ class TileMap {
 	}
 
 	onTileClick(tile, pointer) {
+		console.log('tileClicked: ' + tile.X + ', ' + tile.Y + ' - ' + tile.id)
 		this.events.emit('tileClick', tile, pointer)
 	}
 

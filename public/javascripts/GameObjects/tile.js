@@ -34,6 +34,13 @@ class Tile {
 		this.sprite.on('pointerdown', this.onClick, this)
 		this.sprite.on('pointerover', this.onHover, this)
 		this.sprite.on('pointerout', this.onBlur, this)
+		this.text = this.scene.add.text(this.x, this.y, this.id, {
+			fontFamily: 'Arial',
+			fontSize: '12px',
+			color: '#FFFFFF',
+		})
+		this.text.setOrigin(0.5, 0.5)
+		this.text.setDepth(1)
 	}
 
 
@@ -68,7 +75,12 @@ class Tile {
 	setType(type) {
 		this.type = type
 		this.color = Tile.colors[type]
+		this.hoverColor = this.color - 0x222222
 		this.reset()
+	}
+
+	setRoad(road) {
+		this.road = road
 	}
 
 	reset() {

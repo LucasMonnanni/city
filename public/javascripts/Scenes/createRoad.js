@@ -54,15 +54,24 @@ class CreateRoad extends CreateScene {
 					this.selection.push(this.tileMap.tiles[Y][X])
 				}
 			}
+			// get next tile, check if road, if road, add to selection
 			this.colorTiles()
 		}
 	}
 
 	createSelectionObject() {
-		var road = new Road(this.graph, this.selection[0], this.selection[this.selection.length-1], this.oneWay)
-		this.selection.forEach(element => {
-			element.setType(this.tileType)
+		var nodes = []
+		this.selection.forEach((element, idx, array) => {
+			if (element.road) {
+				element.road.split(element)
+				nodes.push(idx)
+			} else if (idx == 0 || idx == this.selection.length - 1) {
+				nodes.push(idx)
+			}
 		})
+		for (let i = 1; i < nodes.length; i++) {
+			new Road(this.graph, this.selection.slice(nodes[i-1], nodes[i]+1), this.oneWay)
+		}
 	}
 	
 }

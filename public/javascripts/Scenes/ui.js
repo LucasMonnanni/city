@@ -16,11 +16,23 @@ class UI extends Phaser.Scene {
 				}
 			},
 			{
+				text: 'Create road grid',
+				onClick: () => {
+					this.scene.run('CreateRoadGrid')
+				}
+			},
+			{
 				text: 'Create zone',
 				onClick: () => {
 					this.scene.run('CreateZone')
 				}
 			},
+			{
+				text: 'Create path',
+				onClick: () => {
+					this.scene.run('CreatePath')
+				}
+			}
 		]
 		this.links.forEach((link, i) => {
 			this.add.text(100, 150 + i * 20, link.text).setInteractive().on('pointerdown', link.onClick)

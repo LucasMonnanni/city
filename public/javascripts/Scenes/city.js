@@ -10,7 +10,7 @@ class City extends Phaser.Scene {
 	create(tileData = {}) {
 		console.log(tileData)
 		this.tileMap = new TileMap(this, 350, 200, tileData)
-		this.graph = new Graph()
+		this.graph = new Graph(this)
 		this.cameraCursor = this.input.keyboard.addKeys('W,S,A,D');
 		this.cam = this.cameras.main
 		this.setWheelListener();

@@ -1,7 +1,9 @@
 import City from './Scenes/city.js'
-import CreateRoad from './Scenes/createRoad.js'
 import UI from './Scenes/ui.js'
+import CreateRoad from './Scenes/createRoad.js'
+import CreateRoadGrid from './Scenes/createRoadGrid.js'
 import CreateZone from './Scenes/createZone.js'
+import CreatePath from './Scenes/createPath.js'
 
 var config = {
 	type: Phaser.AUTO,
@@ -11,7 +13,9 @@ var config = {
 		City,
 		UI,
 		CreateRoad,
-		CreateZone
+		CreateRoadGrid,
+		CreateZone,
+		CreatePath
 	],
 	parent: 'juego'
 }
