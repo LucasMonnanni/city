@@ -22,6 +22,12 @@ class UI extends Phaser.Scene {
 				}
 			},
 			{
+				text: 'Delete Road',
+				onClick: () => {
+					this.scene.run('DeleteRoad')
+				}
+			},
+			{
 				text: 'Create zone',
 				onClick: () => {
 					this.scene.run('CreateZone')

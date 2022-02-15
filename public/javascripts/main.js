@@ -4,6 +4,7 @@ import CreateRoad from './Scenes/createRoad.js'
 import CreateRoadGrid from './Scenes/createRoadGrid.js'
 import CreateZone from './Scenes/createZone.js'
 import CreatePath from './Scenes/createPath.js'
+import DeleteRoad from './Scenes/deleteRoad.js'
 
 var config = {
 	type: Phaser.AUTO,
@@ -15,7 +16,8 @@ var config = {
 		CreateRoad,
 		CreateRoadGrid,
 		CreateZone,
-		CreatePath
+		CreatePath,
+		DeleteRoad
 	],
 	parent: 'juego'
 }

@@ -62,7 +62,7 @@ class CreateRoad extends CreateScene {
 	createSelectionObject() {
 		var nodes = []
 		this.selection.forEach((element, idx, array) => {
-			if (element.road) {
+			if (element.type == 'road') {
 				element.road.split(element)
 				nodes.push(idx)
 			} else if (idx == 0 || idx == this.selection.length - 1) {
@@ -70,6 +70,8 @@ class CreateRoad extends CreateScene {
 			}
 		})
 		for (let i = 1; i < nodes.length; i++) {
+			console.log('Creating road with nodes:')
+			console.log(nodes)
 			new Road(this.graph, this.selection.slice(nodes[i-1], nodes[i]+1), this.oneWay)
 		}
 	}

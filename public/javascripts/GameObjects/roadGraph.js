@@ -91,10 +91,58 @@ class Graph	{
 		}
 	}
 
-	removeEdge(v, w, oneWay)	{
+	removeEdge(v, w, oneWay, normalize = true)	{
+		console.log(`Removing edge from ${v} to ${w} ${oneWay? '' : 'and back'}`)
 		this.adjList[v].splice(this.adjList[v].indexOf(this.adjList[v].find(element => element.node == w)), 1)
 		if (!oneWay) {
 			this.adjList[w].splice(this.adjList[w].indexOf(this.adjList[w].find(element => element.node == v)), 1)
+		}
+		if (normalize) {
+			this.normalizeNode(v)
+			this.normalizeNode(w)
+		}
+	}
+
+	normalizeNode(v) {
+		console.log('Normalizing node:' + v)
+		if (!this.adjList[v].length) {
+			console.log('Deleting unconnected node')
+			delete this.adjList[v]
+		} else if (this.adjList[v].length == 1) {
+			var w = this.adjList[v][0].node
+			console.log('Node has only one edge')
+			// check if only edge is one way
+			if (!this.adjList[w].find(element => element.node == v)) {
+				console.log('It is a one way edge')
+				var incoming = this.getIncomingNodes(v)
+				// check if there is only one other incoming edge
+				if (incoming.length == 1)	{
+					console.log('It has only one incoming')
+					console.log(incoming[0])
+					// if both, remove vertex and replace edges
+					var u = incoming[0].node
+					// make both roads one
+					incoming[0].road.merge(this.adjList[v][0].road)
+					// add new edge and remove old ones
+					this.adjList[u].splice(this.adjList[u].indexOf(this.adjList[u].find(element => element.node == v)), 1)
+					this.adjList[u].push({node: w, road: incoming[0].road})
+				}
+			} else {
+				console.log('Edge is two ways, node is radial, stays put')
+			}
+		} else if (this.adjList[v].length == 2) {
+			[u, w] = [0, 1].map(i => this.adjList[v][i].node)
+			var incoming = this.getIncomingNodes(v)
+			console.log(incoming)
+			if (incoming.length == 2 && [u, w].includes(incoming[0].node) && [u, w].includes(incoming[1].node)) {
+				// make both roads one
+				incoming[0].road.merge(incoming[0].road)
+				// add new edge and remove old ones
+				this.adjList[u].splice(this.adjList[u].indexOf(this.adjList[u].find(element => element.node == v)), 1)
+				this.adjList[u].push({ node: w, road: incoming[0].road })
+				this.adjList[w].splice(this.adjList[w].indexOf(this.adjList[w].find(element => element.node == v)), 1)
+				this.adjList[w].push({ node: u, road: incoming[0].road })
+			}
 		}
 	}
 
@@ -102,8 +150,16 @@ class Graph	{
 		return Object.keys(this.adjList);
 	}
 
-	getConnectedNodes(start)	{
-		
+	getIncomingNodes(v)	{
+		var incoming = []
+		this.getNodes().forEach(node => {
+			this.adjList[node].forEach(edge => {
+				if (edge.node == v) {
+					incoming.push({node: Number(node), road: edge.road})
+				}
+			})
+		})
+		return incoming
 	}
 
 	createPath(start, end)	{
@@ -171,64 +227,126 @@ class Graph	{
 class Road	{
 	constructor(graph, tiles, oneWay)	{
 		this.graph = graph
-		this.tiles = tiles
 		this.oneWay = oneWay;
-
+		this.tiles = tiles.slice(1,-1)
+		console.log(tiles)
+		this.nodeTiles = {}
+		for (let i = 0; i < tiles.length; i++)	{
+			if (i ==0 || i == tiles.length-1) {
+				tiles[i].setType('roadNode')
+				if (i == 0)	{
+					this.nodeTiles.start = tiles[i]
+				} else {
+					this.nodeTiles.end = tiles[i]
+				}
+			} else {
+				tiles[i].setType('road')
+			}
+			tiles[i].setRoad(this)
+		}
+		console.log(this.nodeTiles)
+		console.log(this.tiles)
 		this.setLength();
-		this.tiles.forEach(element => {
-			element.setType('road')
-			element.setRoad(this)
-		})
 		this.addEdge()
+		console.log(this.tiles.length)
 	}
 
 	setLength() {
-		var start = this.tiles[0]
-		var end = this.tiles[this.tiles.length-1]
+		var start = this.start
+		var end = this.end
 		if (start.X == end.X || start.Y == end.Y) {
 			this.length = Math.abs(start.X - end.X) + Math.abs(start.Y - end.Y) + 1
 		} else {
-			this.length = Math.floor((Math.abs(start.X - end.X) + Math.abs(start.Y - end.Y) + 2) * 0.707)
+			this.length = (Math.abs(start.X - end.X) + Math.abs(start.Y - end.Y) + 2) * 0.707
 		}
 	}
 
 	get start()	{
-		return this.tiles[0]
+		return this.nodeTiles.start
 	}
 
 	get end()	{
-		return this.tiles[this.tiles.length - 1]
+		return this.nodeTiles.end
 	}
 	
 	addEdge()	{
 		this.graph.addEdge(this.start.id, this.end.id, this, this.oneWay);
 	}
 
-	removeEdge()	{
-		this.graph.removeEdge(this.start.id, this.end.id, this.oneWay);
+	removeEdge(normalize)	{
+		this.graph.removeEdge(this.start.id, this.end.id, this.oneWay, normalize);
 	}
 
 	split(tile)	{
-		if (this.start == tile)	{
+		if (this.start === tile)	{
 			return
-		} else if (this.end == tile) {
+		} else if (this.end === tile) {
 			return
 		} else {
+			console.log('Splitting road')
 			console.log('Before removing edge:')
 			console.log(this.graph.adjList)
-			this.removeEdge()
+			this.removeEdge(false)
 			console.log('After removing edge:')
 			console.log(this.graph.adjList)
 			var tileIdx = this.tiles.indexOf(tile)
-			new Road(this.graph, this.tiles.slice(0, tileIdx+1), this.oneWay)
-			this.tiles = this.tiles.slice(tileIdx)
+			var newTiles = [this.nodeTiles.start].concat(this.tiles.slice(0, tileIdx + 1))
+			new Road(this.graph, newTiles, this.oneWay)
+			this.nodeTiles.start = this.tiles[tileIdx]
+			this.tiles = this.tiles.slice(tileIdx+1)
 			this.setLength()
 			this.addEdge()
 		}
 	}
 
-	pointTiles()	{
+	merge(otherRoad)	{
+		console.log('Merging road')
+		if (this.nodeTiles.end == otherRoad.nodeTiles.start) {
+			this.nodeTiles.end = otherRoad.nodeTiles.end
+			this.tiles.push(otherRoad.nodeTiles.start)
+			otherRoad.nodeTiles.start.setType('road').setRoad(this)
+		} else if (this.nodeTiles.end == otherRoad.nodeTiles.end)	{
+			this.nodeTiles.end = otherRoad.nodeTiles.start
+			this.tiles.push(otherRoad.nodeTiles.end)
+			otherRoad.nodeTiles.end.setType('road').setRoad(this)
+		} else if (this.nodeTiles.start == otherRoad.nodeTiles.end) {
+			this.nodeTiles.start = otherRoad.nodeTiles.start
+			this.tiles.push(otherRoad.nodeTiles.end)
+			otherRoad.nodeTiles.end.setType('road').setRoad(this)
+		} else if (this.nodeTiles.start == otherRoad.nodeTiles.start) {
+			this.nodeTiles.start = otherRoad.nodeTiles.end
+			this.tiles.push(otherRoad.nodeTiles.start)
+			otherRoad.nodeTiles.start.setType('road').setRoad(this)
+		} else {
+			return this
+		}
+		this.tiles.concat(otherRoad.tiles)
+		otherRoad.tiles.forEach((tile)=>{
+			tile.setRoad(this)
+		})
+		this.length += otherRoad.length
+		return this
+	}
 
+	delete()	{
+		console.log('Deleting road')
+		console.log(this.tiles.length)
+		console.log(this.nodeTiles)
+		this.tiles.forEach((tile)=>{
+			tile.setType('grass')
+		})
+		console.log(this.nodeTiles)
+		if (this.nodeTiles.start.road.length == 1)	{
+			this.nodeTiles.start.setType('grass')
+		} else {
+			this.nodeTiles.start.road.splice(this.nodeTiles.start.road.indexOf(this), 1)
+		}
+		if (this.nodeTiles.end.road.length == 1) {
+			this.nodeTiles.end.setType('grass')
+		} else {
+			this.nodeTiles.end.road.splice(this.nodeTiles.end.road.indexOf(this), 1)
+		}
+		this.removeEdge()
 	}
 }
 

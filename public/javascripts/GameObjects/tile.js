@@ -73,18 +73,43 @@ class Tile {
 	}
 
 	setType(type) {
-		this.type = type
-		this.color = Tile.colors[type]
-		this.hoverColor = this.color - 0x222222
-		this.reset()
+		if (this.type != type){
+			this.type = type
+			this.color = Tile.colors[type]
+			this.hoverColor = this.color - 0x222222
+			switch (type) {
+				case 'road':
+					this.road = null
+					break
+				case 'grass':
+					delete this.road
+					break
+				case 'roadNode':
+					this.road = []
+					break
+			}
+			this.reset()
+		}
+		return this
 	}
 
 	setRoad(road) {
-		this.road = road
+		switch (this.type) {
+			case 'road':
+				this.road = road
+				break
+			case 'roadNode':
+				this.road.push(road)
+				break
+			default:
+				break
+		}
+		return this
 	}
 
 	reset() {
 		this.sprite.setFillStyle(this.color)
+		return this
 	}
 
 }
