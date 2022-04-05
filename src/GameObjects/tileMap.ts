@@ -1,7 +1,17 @@
-import Tile from './tile.js'
+import City from '../Scenes/city'
+import {Tile} from './tile'
 
-class TileMap {
-	constructor(scene, x, y, tileData) {
+export class TileMap {
+	scene: City
+	offsetX: number
+	offsetY: number
+	width: number
+	height: number
+	tileData: {size: number, rows: any[][]}
+	tiles: Tile[][]
+	events: Phaser.Events.EventEmitter
+	clicked: boolean
+	constructor(scene: City, x: number, y: number, tileData?: {size: number, rows: any[][]}) {
 		this.scene = scene
 		this.offsetX = x
 		this.offsetY = y
@@ -10,29 +20,25 @@ class TileMap {
 
 		this.clicked = false
 
-		if (Object.keys(tileData).length == 0) {
+		if (!tileData) {
 			console.log('No tile data provided')
+			this.width = 15
+			this.height = 10
 			this.tileData = {
 				size: 64,
-				rows: []
+				rows: [...Array(this.height)].map(x => Array(this.width))
 			}
 			// populate tileData
-			for (let j = 0; j < 10; j++) {
+			for (let j = 0; j < this.height; j++) {
 				this.tileData.rows[j] = []
-				this.height = j + 1
-				for (let i = 0; i < 15; i++) {
-					if (false) {
-						// if (j>3 && j< 7 && j%2 == 0 && i%2 == 0 && i>4 && i<13)	{
-						this.tileData.rows[j][i] = { type: 'solid', height: 24, id: '0xDD9999' }
-					} else {
-						// this.tileData.rows[j][i] = (j + i) % 2 == 0 ? { type: 'flat', id: '0x9FDF61' } : { type: 'flat', id: '0xFFFFFF' }
-						this.tileData.rows[j][i] = {type: 'grass'}
-						this.width = i + 1
-					}
+				for (let i = 0; i < this.width; i++) {
+					this.tileData.rows[j][i] = {type: 'grass'}
 				}
 			}
 		} else {
 			this.tileData = tileData
+			this.width = tileData.rows[0].length
+			this.height = tileData.rows.length
 		}
 		// create tiles from tileData
 		for (let j = 0; j < this.tileData.rows.length; j++) {
@@ -47,7 +53,7 @@ class TileMap {
 		
 	}
 
-	tileToSceneCoords(X, Y) {
+	tileToSceneCoords(X: number, Y:number) {
 		var x = (X - Y) * this.tileData.size / 2 + this.offsetX
 		var y = (X + Y) * this.tileData.size / 4 + this.offsetY
 		return [x, y]
@@ -62,12 +68,12 @@ class TileMap {
 		}
 	}
 
-	onTileClick(tile, pointer) {
+	onTileClick(tile: Tile, pointer: Phaser.Input.Pointer) {
 		console.log('tileClicked: ' + tile.X + ', ' + tile.Y + ' - ' + tile.id)
 		this.events.emit('tileClick', tile, pointer)
 	}
 
-	onTileHover(tile) {
+	onTileHover(tile: Tile) {
 		this.events.emit('tileHover', tile)
 	}
 }

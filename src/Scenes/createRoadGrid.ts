@@ -1,10 +1,14 @@
-import CreateScene from "./createScene.js";
-import data from "../data.js";
+import CreateScene from "./createScene";
+import {Road, Graph} from "../GameObjects/roadGraph"
+import {data} from "../data";
 
 class CreateRoadGrid extends CreateScene	{
+	oneWay: boolean
+	step!: number
+	nodes!: string[][]
+	graph!: Graph
 	constructor() {
 		super('CreateRoadGrid', 0x222222)
-		this.tileType = 'road'
 		this.oneWay = false
 	}
 

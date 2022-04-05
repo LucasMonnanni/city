@@ -1,4 +1,6 @@
 class UI extends Phaser.Scene {
+	text: Phaser.GameObjects.Text
+	links: {text: string, onClick: () => void}[]
 	constructor() {
 		super({
 			key: 'UI',
@@ -45,7 +47,7 @@ class UI extends Phaser.Scene {
 		})
 	}
 
-	update(time, delta) {
+	update(time: number, delta: number) {
 		this.text.setText(`${1000/delta}`)
 	}
 }

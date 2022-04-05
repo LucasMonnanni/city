@@ -1,5 +1,21 @@
-class CreateScene extends Phaser.Scene {
-	constructor(key, selectionColor) {
+import { Tile } from "../GameObjects/tile"
+import { TileMap } from "../GameObjects/tileMap"
+
+abstract class CreateScene extends Phaser.Scene {
+	selection: Tile[] = []
+	previousSelection: Tile[] = []
+	drag!: {
+		start: Tile,
+		over: Tile
+
+	}
+	selectionColor: number
+	tileMap!: TileMap
+	clicked: boolean
+	abstract createSelectionObject(): void
+	declare key: string
+
+	constructor(key: string, selectionColor: number) {
 		super({
 			key: key,
 			active: false
@@ -7,26 +23,25 @@ class CreateScene extends Phaser.Scene {
 		this.selectionColor = selectionColor
 		this.selection = []
 		this.previousSelection = []
+		this.clicked = false
 	}
 
 	create() {
 		this.tileMap = this.scene.get('City').tileMap
-		this.clicked = false
-		this.drag = {}
 		this.tileMap.events.on('tileClick', this.onClick, this)
-		this.tileMap.events.on('tileHover', (tile)=> {
-			this.drag.over = tile
+		this.tileMap.events.on('tileHover', (tile: Tile)=> {
+			if (this.clicked) {
+				this.drag.over = tile
+			}
 		}, this)
 	}
 	
-	onClick(tile, pointer) {
+	onClick(tile: Tile, pointer: Phaser.Input.Pointer) {
 		if (!this.clicked) {
 			this.clicked = true
 			this.drag = {
 				start: tile,
-				over: tile,
-				end: tile,
-				pointer: pointer
+				over: tile
 			}
 		} else {
 			this.clicked = false

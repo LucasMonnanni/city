@@ -1,4 +1,4 @@
-const data = {
+export const data = {
 	cameraMotion: {
 		edgeWidth: 20,
 		speed: 10,
@@ -9,5 +9,3 @@ const data = {
 		gridSize: 5
 	}
 }
-
-export default data

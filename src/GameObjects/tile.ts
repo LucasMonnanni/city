@@ -1,14 +1,34 @@
-class Tile {
-	static colors = {
+import City from "../Scenes/city"
+import { Road } from "./roadGraph"
+import { TileMap } from './tileMap'
+
+type tileType = 'grass' | 'road' | 'roadNode'
+type Point = { x: number, y: number }
+
+
+export class Tile {
+	tileMap: TileMap
+	scene: City
+	type: tileType
+	color: number
+	hoverColor: number
+	basePoints: Point[] = []
+	points: Point[] = []
+	id: string
+	x: number
+	y: number
+	X: number
+	Y: number
+	sprite: Phaser.GameObjects.Polygon
+	text: Phaser.GameObjects.Text
+	road: Road | Road[] | null
+
+	static colors: {[key in tileType]: number} = {
 		grass: 0x9FDF61,
 		road: 0x222222,
-		zone: {
-			residential: '#00FF00',
-			commercial: '#0000FF',
-			industrial: '#AAAA00',
-		}
-	}
-	constructor(tileMap, size, X, Y, tileData) {
+		roadNode: 0x000000
+	} 
+	constructor(tileMap: TileMap, size: number, X: number, Y: number, tileData: {type: tileType, height: number}) {
 		this.tileMap = tileMap
 		this.scene = tileMap.scene
 		this.type = tileData.type
@@ -23,13 +43,14 @@ class Tile {
 		]
 		this.X = X
 		this.Y = Y
-		this.id = X + Y * tileMap.width
+		this.id = (X + Y * tileMap.width).toString()
 		const coords = tileMap.tileToSceneCoords(X, Y)
 		this.x = coords[0]
 		this.y = coords[1]
 		
-		this.setPolyPoints(tileData, halfSize)
-		this.setPolySprite()
+		this.setPolyPoints()
+		this.sprite = this.makePolySprite()
+		this.road = null
 
 		this.sprite.on('pointerdown', this.onClick, this)
 		this.sprite.on('pointerover', this.onHover, this)
@@ -44,18 +65,18 @@ class Tile {
 	}
 
 
-	setPolySprite() {
-		this.sprite = this.scene.add.polygon(this.x, this.y, this.points, this.color, 1).setStrokeStyle(1, 0xDDDDDD)
-		this.sprite.setInteractive(new Phaser.Geom.Polygon(this.basePoints), Phaser.Geom.Polygon.Contains)
+	makePolySprite(): Phaser.GameObjects.Polygon {
+		const sprite = this.scene.add.polygon(this.x, this.y, this.points, this.color, 1).setStrokeStyle(1, 0xDDDDDD)
+		sprite.setInteractive(new Phaser.Geom.Polygon(this.basePoints), Phaser.Geom.Polygon.Contains)
 			.setDisplayOrigin(0, 0)
+		return sprite
 	}
 
-	setPolyPoints(tileData, halfSize) {
+	setPolyPoints() {
 			this.points = this.basePoints
-			tileData.height = 0
 	}
 
-	onClick(pointer) {
+	onClick(pointer: Phaser.Input.Pointer) {
 		this.tileMap.onTileClick(this, pointer)
 	}
 
@@ -68,11 +89,11 @@ class Tile {
 		this.sprite.setFillStyle(this.color)
 	}
 
-	paint(color) {
+	paint(color: number) {
 		this.sprite.setFillStyle(color)
 	}
 
-	setType(type) {
+	setType(type: tileType) {
 		if (this.type != type){
 			this.type = type
 			this.color = Tile.colors[type]
@@ -82,7 +103,7 @@ class Tile {
 					this.road = null
 					break
 				case 'grass':
-					delete this.road
+					this.road = null
 					break
 				case 'roadNode':
 					this.road = []
@@ -93,13 +114,17 @@ class Tile {
 		return this
 	}
 
-	setRoad(road) {
+	setRoad(road: Road) {
 		switch (this.type) {
 			case 'road':
 				this.road = road
 				break
 			case 'roadNode':
-				this.road.push(road)
+				if (this.road instanceof Array) {
+					this.road.push(road)
+				} else {
+					this.road = [road]
+				}
 				break
 			default:
 				break
@@ -110,6 +135,10 @@ class Tile {
 	reset() {
 		this.sprite.setFillStyle(this.color)
 		return this
+	}
+
+	update()	{
+
 	}
 
 }

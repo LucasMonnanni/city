@@ -1,9 +1,14 @@
+import City from "../Scenes/city"
+
+type QueueNode = { value: string, priority: number }
 class Queue {
+	values: QueueNode[]
+
 	constructor() {
 		this.values = []
 	}
 
-	enqueue(value, priority) {
+	enqueue(value: string, priority: number) {
 		this.values.push({ value: value, priority: priority })
 		this.bubbleUp()
 	}
@@ -11,7 +16,7 @@ class Queue {
 	dequeue() {
 		let max = this.values[0]
 		let end = this.values.pop()
-		if (this.values.length > 0) {
+		if (end) {
 			this.values[0] = end
 			this.sinkDown()
 		}
@@ -50,7 +55,7 @@ class Queue {
 				if (leftChild.priority < element.priority) {
 					swap = leftChildIdx
 				}
-			}
+			} else {break}
 			if (rightChildIdx < length) {
 				rightChild = this.values[rightChildIdx]
 				if (
@@ -60,7 +65,8 @@ class Queue {
 					swap = rightChildIdx
 				}
 			}
-
+	
+					
 			if (!swap) break
 			this.values[idx] = this.values[swap]
 			this.values[swap] = element
@@ -68,17 +74,23 @@ class Queue {
 		}
 	}
 }
+type Edge = {
+	node: string,
+	road: Road
+}
 class Graph	{
-	constructor(scene)	{
+	scene: City
+	adjList: { [key: string]: Edge[] }
+	constructor(scene: City)	{
 		this.scene = scene
 		this.adjList = {};
 	}
 
-	addVertex(v)	{
+	addVertex(v: string)	{
 		this.adjList[v] = [];
 	}
 
-	addEdge(v, w, road, oneWay = false)	{
+	addEdge(v: string, w: string, road: Road, oneWay: boolean = false)	{
 		if (!this.adjList[v])	{
 			this.addVertex(v)
 		}
@@ -91,11 +103,17 @@ class Graph	{
 		}
 	}
 
-	removeEdge(v, w, oneWay, normalize = true)	{
+	removeEdge(v: string, w: string, oneWay: boolean, normalize = true)	{
 		console.log(`Removing edge from ${v} to ${w} ${oneWay? '' : 'and back'}`)
-		this.adjList[v].splice(this.adjList[v].indexOf(this.adjList[v].find(element => element.node == w)), 1)
+		let edge = this.adjList[v].find(element => element.node == w)
+		if (edge)	{
+			this.adjList[v].splice(this.adjList[v].indexOf(edge), 1)
+		}
 		if (!oneWay) {
-			this.adjList[w].splice(this.adjList[w].indexOf(this.adjList[w].find(element => element.node == v)), 1)
+			edge = this.adjList[w].find(element => element.node == v)
+			if (edge)	{
+				this.adjList[w].splice(this.adjList[w].indexOf(edge), 1)
+			}
 		}
 		if (normalize) {
 			this.normalizeNode(v)
@@ -103,7 +121,7 @@ class Graph	{
 		}
 	}
 
-	normalizeNode(v) {
+	normalizeNode(v: string) {
 		console.log('Normalizing node:' + v)
 		if (!this.adjList[v].length) {
 			console.log('Deleting unconnected node')
@@ -146,16 +164,16 @@ class Graph	{
 		}
 	}
 
-	getNodes()	{
+	getNodes(): string[] {
 		return Object.keys(this.adjList);
 	}
 
-	getIncomingNodes(v)	{
-		var incoming = []
-		this.getNodes().forEach(node => {
-			this.adjList[node].forEach(edge => {
+	getIncomingNodes(v: string): Edge[]	{
+		let incoming = []
+		this.getNodes().forEach((node: string) => {
+			this.adjList[node].forEach((edge: Edge) => {
 				if (edge.node == v) {
-					incoming.push({node: Number(node), road: edge.road})
+					incoming.push({node: node, road: edge.road})
 				}
 			})
 		})
@@ -163,9 +181,7 @@ class Graph	{
 	}
 
 	createPath(start, end)	{
-		var then = this.scene.time.now
 		this.path = this.dijkstra(start, end)
-		console.log(this.scene.time.now-then)
 		this.highlightPath()
 	}
 

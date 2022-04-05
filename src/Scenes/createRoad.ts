@@ -1,23 +1,23 @@
-import CreateScene from './createScene.js'
-import {Road} from '../GameObjects/roadGraph.js'
+import CreateScene from './createScene'
+import {Road, Graph} from '../GameObjects/roadGraph'
+import { Tile } from '../GameObjects/tile'
 
-class RoadTypes  {
-	static Road = new RoadTypes('Road')
-	constructor(name) {
-		this.name = name
-	}
-}
+type RoadType = 'road' | 'avenue' 
 
 class CreateRoad extends CreateScene {
+	oneWay: boolean
+	graph!: Graph
+
+
 	constructor() {
 		super('CreateRoad', 0x222222)
-		this.tileType = 'road'
 		this.oneWay = false
+		this.clicked = false
 	}
-
+	
 	create() {
-		CreateScene.prototype.create.call(this)
 		this.graph = this.scene.get('City').graph
+		CreateScene.prototype.create.call(this)	
 	}
 
 	update()	{
@@ -25,8 +25,8 @@ class CreateRoad extends CreateScene {
 			this.previousSelection = this.selection
 			this.selection = []
 			var pointerTan = (this.drag.over.Y - this.drag.start.Y) / (this.drag.over.X - this.drag.start.X)
-			if (pointerTan == NaN)	{
-				pointerTan = 1000
+			if (!pointerTan)	{
+				pointerTan = 0
 			}
 			var pointerAngle = Math.atan(pointerTan)
 			var selectionLength = Math.max(Math.abs(this.drag.over.X - this.drag.start.X), Math.abs(this.drag.over.Y - this.drag.start.Y)) + 1
@@ -60,7 +60,7 @@ class CreateRoad extends CreateScene {
 	}
 
 	createSelectionObject() {
-		var nodes = []
+		var nodes: number[] = []
 		this.selection.forEach((element, idx, array) => {
 			if (element.type == 'road') {
 				element.road.split(element)

@@ -1,4 +1,4 @@
-import CreateScene from "./createScene.js";
+import CreateScene from "./createScene";
 
 class CreatePath extends CreateScene{
 	constructor() {
